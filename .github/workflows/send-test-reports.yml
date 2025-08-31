@@ -57,38 +57,6 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
         
-      - name: Log Environment Variables
-        run: |
-          echo "=== GitHub Event Variables ==="
-          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
-          echo "GITHUB_REF: ${{ github.ref }}"
-          echo "GITHUB_SHA: ${{ github.sha }}"
-          echo "GITHUB_WORKFLOW: ${{ github.workflow }}"
-          echo "GITHUB_RUN_ID: ${{ github.run_id }}"
-          echo ""
-          echo "=== Workflow Input Variables ==="
-          echo "Project IDs: ${{ github.event.inputs.project_ids || 'Not provided' }}"
-          echo "Start Date: ${{ github.event.inputs.start_date || steps.date.outputs.date }}"
-          echo "Use Sample Data: ${{ github.event.inputs.use_sample_data || 'Not provided' }}"
-          echo ""
-          echo "=== Email Configuration Secrets ==="
-          echo "EMAIL_HOST: ${{ secrets.EMAIL_HOST || 'Not set' }}"
-          echo "EMAIL_PORT: ${{ secrets.EMAIL_PORT || 'Not set' }}"
-          echo "EMAIL_USER: ${{ secrets.EMAIL_USER || 'Not set' }}"
-          echo "EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD && '****' || 'Not set' }}"
-          echo "EMAIL_FROM: ${{ secrets.EMAIL_FROM || 'Not set' }}"
-          echo "EMAIL_TO: ${{ secrets.EMAIL_TO || 'Not set' }}"
-          echo "API_BASE_URL: ${{ secrets.API_BASE_URL || 'Not set' }}"
-          echo ""
-          echo "=== System Environment Variables ==="
-          echo "NODE_ENV: ${{ env.NODE_ENV || 'Not set' }}"
-          echo "PATH: ${{ env.PATH || 'Not set' }}"
-          echo "HOME: ${{ env.HOME || 'Not set' }}"
-          echo "PWD: ${{ env.PWD || 'Not set' }}"
-          echo ""
-          echo "=== All Environment Variables ==="
-          env | sort
-        
       - name: Send test reports email
         env:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
