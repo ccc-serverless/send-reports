@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
-// Load environment variables from env.config file
+// Load environment variables from .env file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const envPath = join(__dirname, ".env");
@@ -21,31 +21,108 @@ try {
       }
     }
   });
+  console.log("✅ .env file loaded successfully");
 } catch (error) {
-  throw new Error("Required env.config file not found");
+  console.log(
+    "⚠️ .env file not found, using environment variables from system"
+  );
+  // Don't throw error, just continue with system environment variables
 }
 
 // Email Configuration
 export const EMAIL_CONFIG = {
   // SMTP Configuration
   smtp: {
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT),
+    host: process.env.EMAIL_HOST || "smtpout.secureserver.net",
+    port: parseInt(process.env.EMAIL_PORT) || 587,
     secure: false, // true for port 465
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.EMAIL_USER || "glen.eg@cccsnv.com",
+      pass: process.env.EMAIL_PASSWORD || "Glen@12345", // Use environment variable
     },
   },
 
   // Email Settings
-  from: `"Test Reports" <${process.env.EMAIL_FROM}>`,
-  to: process.env.EMAIL_TO,
+  from: `"Test Reports" <${process.env.EMAIL_FROM || "glen.eg@cccsnv.com"}>`,
+  to: process.env.EMAIL_TO || "glen.eg@cccsnv.com",
   subject: "Automated Test Report",
 
   // Report URL (for fetching real data)
-  reportUrl: process.env.API_BASE_URL,
+  reportUrl: process.env.API_BASE_URL || "http://localhost:5000",
 };
+
+// Function to log all environment variables
+export const logAllEnvironmentVariables = () => {
+  console.log("\n=== ENVIRONMENT VARIABLES LOG ===");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("");
+
+  console.log("=== EMAIL CONFIGURATION VARIABLES ===");
+  console.log(
+    "EMAIL_HOST:",
+    process.env.EMAIL_HOST || "Not set (using default)"
+  );
+  console.log(
+    "EMAIL_PORT:",
+    process.env.EMAIL_PORT || "Not set (using default)"
+  );
+  console.log(
+    "EMAIL_USER:",
+    process.env.EMAIL_USER || "Not set (using default)"
+  );
+  console.log(
+    "EMAIL_PASSWORD:",
+    process.env.EMAIL_PASSWORD ? "****" : "Not set (using default)"
+  );
+  console.log(
+    "EMAIL_FROM:",
+    process.env.EMAIL_FROM || "Not set (using default)"
+  );
+  console.log("EMAIL_TO:", process.env.EMAIL_TO || "Not set (using default)");
+  console.log(
+    "API_BASE_URL:",
+    process.env.API_BASE_URL || "Not set (using default)"
+  );
+  console.log("");
+
+  console.log("=== NODE.JS ENVIRONMENT VARIABLES ===");
+  console.log("NODE_ENV:", process.env.NODE_ENV || "Not set");
+  console.log("NODE_VERSION:", process.env.NODE_VERSION || "Not set");
+  console.log("NODE_PATH:", process.env.NODE_PATH || "Not set");
+  console.log("");
+
+  console.log("=== SYSTEM ENVIRONMENT VARIABLES ===");
+  console.log("PATH:", process.env.PATH || "Not set");
+  console.log("HOME:", process.env.HOME || "Not set");
+  console.log("PWD:", process.env.PWD || "Not set");
+  console.log("USER:", process.env.USER || "Not set");
+  console.log("SHELL:", process.env.SHELL || "Not set");
+  console.log("LANG:", process.env.LANG || "Not set");
+  console.log("");
+
+  console.log("=== ALL ENVIRONMENT VARIABLES (ALPHABETICAL) ===");
+  const envVars = Object.keys(process.env).sort();
+  envVars.forEach((key) => {
+    const value = process.env[key];
+    // Mask sensitive values
+    if (
+      key.toLowerCase().includes("password") ||
+      key.toLowerCase().includes("secret") ||
+      key.toLowerCase().includes("key")
+    ) {
+      console.log(`${key}: ****`);
+    } else {
+      console.log(`${key}: ${value}`);
+    }
+  });
+  console.log("");
+  console.log("=== END ENVIRONMENT VARIABLES LOG ===\n");
+};
+
+// Log environment variables when module is loaded (development only)
+if (process.env.NODE_ENV !== "production") {
+  logAllEnvironmentVariables();
+}
 
 // Email utility functions
 export const formatDuration = (duration) => {

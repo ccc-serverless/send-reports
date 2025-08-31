@@ -9,9 +9,9 @@ on:
         required: false
         default: '68b05ec609d4cadd37167c7e,68b0225f2359580bbd1c5bea,68b022552359580bbd1c5be9,68b022482359580bbd1c5be8,68b0223b2359580bbd1c5be7,68b022292359580bbd1c5be6'
       start_date:
-        description: 'Start date for reports (YYYY-MM-DD)'
+        description: 'Start date for reports (YYYY-MM-DD) - Leave empty for today'
         required: false
-        default: '2025-08-31'
+        default: ''
       use_sample_data:
         description: 'Use sample data instead of real API data'
         required: false
@@ -50,6 +50,42 @@ jobs:
       - name: Build email templates
         run: npm run build
         
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        
+      - name: Log Environment Variables
+        run: |
+          echo "=== GitHub Event Variables ==="
+          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
+          echo "GITHUB_REF: ${{ github.ref }}"
+          echo "GITHUB_SHA: ${{ github.sha }}"
+          echo "GITHUB_WORKFLOW: ${{ github.workflow }}"
+          echo "GITHUB_RUN_ID: ${{ github.run_id }}"
+          echo ""
+          echo "=== Workflow Input Variables ==="
+          echo "Project IDs: ${{ github.event.inputs.project_ids || 'Not provided' }}"
+          echo "Start Date: ${{ github.event.inputs.start_date || steps.date.outputs.date }}"
+          echo "Use Sample Data: ${{ github.event.inputs.use_sample_data || 'Not provided' }}"
+          echo ""
+          echo "=== Email Configuration Secrets ==="
+          echo "EMAIL_HOST: ${{ secrets.EMAIL_HOST || 'Not set' }}"
+          echo "EMAIL_PORT: ${{ secrets.EMAIL_PORT || 'Not set' }}"
+          echo "EMAIL_USER: ${{ secrets.EMAIL_USER || 'Not set' }}"
+          echo "EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD && '****' || 'Not set' }}"
+          echo "EMAIL_FROM: ${{ secrets.EMAIL_FROM || 'Not set' }}"
+          echo "EMAIL_TO: ${{ secrets.EMAIL_TO || 'Not set' }}"
+          echo "API_BASE_URL: ${{ secrets.API_BASE_URL || 'Not set' }}"
+          echo ""
+          echo "=== System Environment Variables ==="
+          echo "NODE_ENV: ${{ env.NODE_ENV || 'Not set' }}"
+          echo "PATH: ${{ env.PATH || 'Not set' }}"
+          echo "HOME: ${{ env.HOME || 'Not set' }}"
+          echo "PWD: ${{ env.PWD || 'Not set' }}"
+          echo ""
+          echo "=== All Environment Variables ==="
+          env | sort
+        
       - name: Send test reports email
         env:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
@@ -59,7 +95,7 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          API_START_DATE: ${{ github.event.inputs.start_date || '2025-08-31' }}
+          API_START_DATE: ${{ github.event.inputs.start_date || steps.date.outputs.date }}
         run: |
           if [ "${{ github.event.inputs.use_sample_data }}" = "true" ]; then
             npm run send:multi:sample
@@ -77,11 +113,11 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          API_START_DATE: ${{ github.event.inputs.start_date || '2025-08-31' }}
+          API_START_DATE: ${{ github.event.inputs.start_date || steps.date.outputs.date }}
         run: |
           node -e "
           import('./sendMultiProjectReport.js').then(m => {
             const projectIds = '${{ github.event.inputs.project_ids }}'.split(',').map(id => id.trim());
-            return m.sendCustomMultiProjectReport(projectIds, '${{ github.event.inputs.start_date || '2025-08-31' }}');
+            return m.sendCustomMultiProjectReport(projectIds, '${{ github.event.inputs.start_date || steps.date.outputs.date }}');
           }).catch(console.error);
           "
