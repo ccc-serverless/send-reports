@@ -1,0 +1,25 @@
+{
+  "name": "email-templates",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "send": "node sendTestReport.js",
+    "send:sample": "node -e \"import('./sendTestReport.js').then(m => m.sendSampleReport())\"",
+    "send:multi": "node -e \"import('./sendMultiProjectReport.js').then(m => m.sendDefaultMultiProjectReport())\"",
+    "send:multi:sample": "node -e \"import('./sendMultiProjectReport.js').then(m => m.sendSampleMultiProjectReport())\"",
+    "test:scenarios": "node testScenarios.js",
+    "build": "esbuild TestReportEmail.jsx --bundle --format=esm --outfile=TestReportEmail.js --platform=node && esbuild MultiProjectReportEmail.jsx --bundle --format=esm --outfile=MultiProjectReportEmail.js --platform=node",
+    "dev": "esbuild TestReportEmail.jsx --bundle --format=esm --outfile=TestReportEmail.js --platform=node --watch & esbuild MultiProjectReportEmail.jsx --bundle --format=esm --outfile=MultiProjectReportEmail.js --platform=node --watch"
+  },
+  "dependencies": {
+    "@react-email/components": "^0.5.1",
+    "@react-email/render": "^1.2.1",
+    "dotenv": "^17.2.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.6",
+    "react": "^19.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+}

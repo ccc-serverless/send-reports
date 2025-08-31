@@ -1,0 +1,87 @@
+name: Send Test Reports Email
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      project_ids:
+        description: 'Comma-separated project IDs (optional)'
+        required: false
+        default: '68b05ec609d4cadd37167c7e,68b0225f2359580bbd1c5bea,68b022552359580bbd1c5be9,68b022482359580bbd1c5be8,68b0223b2359580bbd1c5be7,68b022292359580bbd1c5be6'
+      start_date:
+        description: 'Start date for reports (YYYY-MM-DD)'
+        required: false
+        default: '2025-08-31'
+      use_sample_data:
+        description: 'Use sample data instead of real API data'
+        required: false
+        default: 'false'
+  
+  # Schedule: Run daily at 9 AM UTC
+  schedule:
+    - cron: '0 9 * * *'
+  
+  # Run on push to main branch
+  push:
+    branches: [ main ]
+    paths:
+      - '*.jsx'
+      - '*.js'
+      - '.github/workflows/send-test-reports.yml'
+
+jobs:
+  send-reports:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build email templates
+        run: npm run build
+        
+      - name: Send test reports email
+        env:
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_START_DATE: ${{ github.event.inputs.start_date || '2025-08-31' }}
+        run: |
+          if [ "${{ github.event.inputs.use_sample_data }}" = "true" ]; then
+            npm run send:multi:sample
+          else
+            npm run send:multi
+          fi
+          
+      - name: Send custom project reports (if project IDs provided)
+        if: github.event.inputs.project_ids != ''
+        env:
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_START_DATE: ${{ github.event.inputs.start_date || '2025-08-31' }}
+        run: |
+          node -e "
+          import('./sendMultiProjectReport.js').then(m => {
+            const projectIds = '${{ github.event.inputs.project_ids }}'.split(',').map(id => id.trim());
+            return m.sendCustomMultiProjectReport(projectIds, '${{ github.event.inputs.start_date || '2025-08-31' }}');
+          }).catch(console.error);
+          "
