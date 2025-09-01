@@ -20,7 +20,7 @@ const API_ENDPOINT = `${API_BASE_URL}/api/reports/project`;
 
 async function fetchProjectReport(projectId, startDate = "2025-08-31") {
   try {
-    const url = `${API_ENDPOINT}/${projectId}?startDate=${startDate}`;
+    const url = `${API_ENDPOINT}/${projectId}/latest`;
     console.log(`📊 Fetching report for project ${projectId}...`);
 
     const response = await fetch(url);
@@ -38,7 +38,8 @@ async function fetchProjectReport(projectId, startDate = "2025-08-31") {
     }
 
     // Get the latest report
-    const latestReport = data.data[0];
+    const latestReport = data.data;
+
     console.log(
       `✅ Found report for project ${projectId}: ${latestReport.title}`
     );

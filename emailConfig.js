@@ -43,9 +43,9 @@ export const EMAIL_CONFIG = {
   },
 
   // Email Settings
-  from: `"Test Reports" <${process.env.EMAIL_FROM || "glen.eg@cccsnv.com"}>`,
+  from: `"Smoke Testing Reports" <${process.env.EMAIL_FROM || "glen.eg@cccsnv.com"}>`,
   to: process.env.EMAIL_TO || "glen.eg@cccsnv.com",
-  subject: "Automated Test Report",
+  subject: "Smoke Testing Report Websites",
 
   // Report URL (for fetching real data)
   reportUrl: process.env.API_BASE_URL || "http://localhost:5000",

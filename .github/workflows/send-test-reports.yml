@@ -19,10 +19,10 @@ on:
   
   # Schedule: Run at 9 AM, 11:55 AM, 3 PM, 5 PM UTC
   schedule:
-    - cron: '0 9 * * *'   # 9:00 AM UTC
-    - cron: '55 11 * * *' # 11:55 AM UTC
-    - cron: '0 15 * * *'  # 3:00 PM UTC
-    - cron: '0 17 * * *'  # 5:00 PM UTC
+    - cron: '0 9 * * *'   # 9:00 AM UTC daily
+    - cron: '55 11 * * *' # 11:55 AM UTC daily  
+    - cron: '40 12 * * *'  # 12:40 PM UTC daily
+    - cron: '0 17 * * *'  # 5:00 PM UTC daily
   
   # Run on push to main branch
   push:
